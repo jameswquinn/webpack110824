@@ -3,7 +3,6 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
-const { processImage } = require('./src/utils/imageHelper');
 
 module.exports = (env, argv) => {
   const isProduction = argv.mode === 'production';
@@ -35,20 +34,19 @@ module.exports = (env, argv) => {
           include: path.resolve(__dirname, 'public'),
           use: [
             {
-              loader: 'file-loader',
+              loader: 'responsive-loader',
               options: {
-                name: 'images/[name].[ext]',
+                adapter: require('responsive-loader/sharp'),
+                sizes: [300, 600, 1200, 2000],
+                placeholder: true,
+                placeholderSize: 20,
+                name: 'images/[name]-[width].[ext]',
               },
             },
             {
-              loader: 'image-webpack-loader',
+              loader: 'webp-loader',
               options: {
-                plugins: [
-                  async function(content, filepath) {
-                    const result = await processImage(content);
-                    return result.webp;
-                  }
-                ]
+                quality: 75
               }
             }
           ]
