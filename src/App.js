@@ -5,7 +5,7 @@ function App() {
   return (
     <div>
       <h1>My Component</h1>
-      <Image src="example.png" alt="Example" />
+      <Image src="example2.png" alt="Example" />
     </div>
   );
 }
