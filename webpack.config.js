@@ -3,7 +3,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
-const CopyPlugin = require('copy-webpack-plugin');
+const { processImage } = require('./src/utils/imageHelper');
 
 module.exports = (env, argv) => {
   const isProduction = argv.mode === 'production';
@@ -31,17 +31,28 @@ module.exports = (env, argv) => {
           ],
         },
         {
-          test: /\.(png|jpe?g|gif|webp)$/i,
+          test: /\.png$/,
+          include: path.resolve(__dirname, 'public'),
           use: [
             {
               loader: 'file-loader',
               options: {
-                name: '[name].[hash:8].[ext]',
-                outputPath: 'images',
+                name: 'images/[name].[ext]',
               },
             },
-          ],
-        },
+            {
+              loader: 'image-webpack-loader',
+              options: {
+                plugins: [
+                  async function(content, filepath) {
+                    const result = await processImage(content);
+                    return result.webp;
+                  }
+                ]
+              }
+            }
+          ]
+        }
       ],
     },
     plugins: [
@@ -50,11 +61,6 @@ module.exports = (env, argv) => {
       }),
       isProduction && new MiniCssExtractPlugin({
         filename: '[name].[contenthash].css',
-      }),
-      new CopyPlugin({
-        patterns: [
-          { from: 'public', to: '' },
-        ],
       }),
     ].filter(Boolean),
     optimization: {
