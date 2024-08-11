@@ -1,5 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const sharp = require('sharp');
 
 module.exports = {
   entry: './src/index.js',
@@ -20,12 +21,38 @@ module.exports = {
         use: ['style-loader', 'css-loader'],
       },
       {
-        test: /\.(webp|png|jpe?g)$/,
-        type: 'asset/resource',
-        generator: {
-          filename: 'assets/[name][ext]'
-        }
-      }
+        test: /\.png$/,
+        use: [
+          {
+            loader: 'responsive-loader',
+            options: {
+              adapter: sharp,
+              sizes: [300, 600, 1200, 2000],
+              name: 'images/[name]-[width].[ext]',
+              format: 'webp',
+            },
+          },
+        ],
+      },
+      {
+        test: /\.png$/,
+        use: [
+          {
+            loader: 'responsive-loader',
+            options: {
+              adapter: async (imagePath) => {
+                const image = sharp(imagePath);
+                const metadata = await image.metadata();
+                const isTransparent = metadata.hasAlpha;
+                return isTransparent ? sharp(imagePath) : sharp(imagePath).flatten({ background: '#FFFFFF' });
+              },
+              sizes: [300, 600, 1200, 2000],
+              name: 'images/[name]-[width]-fallback.[ext]',
+              format: (imagePath) => sharp(imagePath).metadata().then(metadata => metadata.hasAlpha ? 'png' : 'jpeg'),
+            },
+          },
+        ],
+      },
     ],
   },
   plugins: [
