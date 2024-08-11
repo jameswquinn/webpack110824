@@ -34,23 +34,14 @@ module.exports = (env, argv) => {
           include: path.resolve(__dirname, 'public'),
           use: [
             {
-              loader: 'responsive-loader',
+              loader: 'file-loader',
               options: {
-                adapter: require('responsive-loader/sharp'),
-                sizes: [300, 600, 1200, 2000],
-                placeholder: true,
-                placeholderSize: 20,
-                name: 'images/[name]-[width].[ext]',
+                name: '[name].[ext]',
+                outputPath: 'images',
               },
             },
-            {
-              loader: 'webp-loader',
-              options: {
-                quality: 75
-              }
-            }
-          ]
-        }
+          ],
+        },
       ],
     },
     plugins: [
